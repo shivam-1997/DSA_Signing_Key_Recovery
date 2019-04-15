@@ -1,67 +1,112 @@
-def sortfn(r, s, k, hm, inp_list):
-    out_list = list()
-    for i in inp_list:
-        t = parser(r, s, k, hm, i)
-        for p in t:
-            out_list.append(p)
-    print(out_list)
-    n = len(out_list)
-    quickSort(out_list, 0, n - 1)
+import numpy as np
+from generation.sage import *
+from fpylll import *
 
-    print(out_list)
-    return(out_list)
 
-def parser(r, s, k, hm, string):
-    a_list = list()
-    j = 0
-    temp = ''
-    total_block_len = 0
-    idash = len(string)
-    c = len(string)
+def bin2decimal(string):
+    string = string[::-1]
+    num = 0
+    factor = 1
+    for i in string:
+        if i == '1':
+            num = num + 1*factor
+        factor *= 2
+    return num
 
-    lsb = ''
-    for i in reversed(string):
-        if i == 'x':
+
+def createCVP(S, n, q):
+    # O
+    B = np.zeros((2*n, 2*n))
+    # I_n+1_x_n+1
+    I = np.identity(n+1)
+    B[:n+1, :n+1] = I
+    # qI_n-1
+    qI = q*np.identity(n-1)
+    B[n+1:, n+1:] = qI
+
+    w_1 = []
+    w_2 = []
+    x = []
+    y = []
+    v = []
+    for i in range(n+1):
+        # S = (r-0, s-1, k-2, h(m)-3, l_a-4, l_b-5, l_c-6, a -7, c-8, number of bits leaked-9)
+        r = S[i][0]
+        s = S[i][1]
+        l_a = S[i][4]
+        l_b = S[i][5]
+        l_c = S[i][6]
+        a = bin2decimal(S[i][7])
+        c = bin2decimal(S[i][8]) * (2 ^ l_b)
+        m = S[i][3]
+        y.append(-(r/s)*(2 ^ l_a))
+        x.append((-(m/c) + c*(2 ^ l_b) + a)*(2 ^ l_a))
+
+        if x != 0:
+            w_1.append(y[i]/y[0])
+            w_2.append((y[i]/y[0]) * (2 ^ (l_c - l_a)))
+            u.append(-(2 ^ (l_c - l_a)))
+            v.append(x[i] - (y[i]/y[0]) * x[0])
+
+    w_1 = np.array(w_1)
+    w_2 = np.array(w_2)
+    B[0][n+1:] = w_1
+    B[1][n+1:] = w_2
+    for i in range(2, n+2):
+        B[i][(i-2)+n+1] = u[i]
+
+    return B, v
+
+
+def CVP2SVP(B, t, n, q):
+
+    B_dash = np.zeros((n+1, n+1))
+    B_dash[:, :-1] = B
+    B[-1, :-1] = t
+    B[-1][-1] = q
+
+    return B_dash
+
+
+def findKey(listOfTriplet, correctKey, q):
+    S = []  # will store the listed list of EKOs
+    S = identify_and_sort(listOfTriplet)
+
+    total_leaked_bits = 0
+    gamma_min = 0
+    for i in S:
+        total_leaked_bits += S[]
+        gamma_min += 1
+        if total_leaked_bits >= 160:
             break
-        lsb = lsb + i
-    lsb = lsb[::-1]
-    lsb_len = len(lsb)
 
-    for i in string[0: -lsb_len]:
-        c = c - 1
-        if i == 'x':
-            if len(temp) >= 5:
-                a_list.append((r, s, k, hm, lsb_len, c+1, idash, lsb, temp, idash - (c + 1) + lsb_len))
-                total_block_len += len(temp)
-            temp = ''
-            idash =  c
+    keyNotFound = True
+    i = gamma_min
+    maxIter = len(S)
+    computedKey = 0
+    while i <= maxIter and keyNotFound == True:
+        # create an SVP instance using the top i EKOs from S
+        cvpBasis, v = createCVP(S, i, q)
+        cvpBasis = [map(ZZ, i) for i in cvpBasis]
+        cvpBasis = matrix(cvpBasis)
+        v = [map(ZZ, i) for i in v]
+        reducedBasis = cvpBasis.LLL(delta=0.75)
+
+        # svpBasis = CVP2SVP(cvpBasis, v, 2*i, q)
+        # Solve the SVP instance, compute the DSA private key
+        # result = Babai(reducedBasis, v)
+        result = CVP.closest_vector(reducedBasis, v)
+
+        computedKey = compute_key(result, S)
+        # Verify the correctness
+        if computedKey == correctKey:
+            keyNotFound = False
         else:
-            temp = temp + i
+            i = i+1
 
-    if len(temp) >= 5:
-        a_list.append((r, s, k, hm, lsb_len, c+1, idash, lsb, temp, idash - (c + 1) + lsb_len))
-        total_block_len += len(temp)
-
-    return a_list
-
-def partition(arr,low,high):
-    i = (low - 1)
-    pivot = arr[high][4]
-
-    for j in range(low , high):
-        if arr[j][4] <= pivot:
-            i = i + 1
-            arr[i], arr[j] = arr[j], arr[i]
-
-    arr[i + 1], arr[high] = arr[high], arr[i + 1]
-    return (i + 1)
-
-def quickSort(arr,low,high):
-    if low < high:
-        pi = partition(arr,low,high)
-        quickSort(arr, low, pi-1)
-        quickSort(arr, pi+1, high)
+    return computedKey
 
 
-x = ["11001xx10101xx00000", "111111xxx0000000", "1111111110xx00000011", "1001010xxxx11111"]
-sortfn('r', 's', 'k', 'h(m)' , x)
+if __name__ == "__main__":
+
+    findKey(listOfTriplets, correctKey, q)

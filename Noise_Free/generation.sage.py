@@ -158,15 +158,10 @@ def generate():
             k = random.StrongRandom().randint(int(_sage_const_1 ), int(key.q-_sage_const_1 ))
             sig = key.sign(h, k)
             # S = (r-0, s-1, k-2, h(m)-3, l_a-4, l_b-5, l_c-6, a -7, c-8, number of bits leaked-9)
-            print h*_sage_const_1p0 
+            print h
             shortList = [sig[_sage_const_0 ]*_sage_const_1p0 , sig[_sage_const_1 ]*_sage_const_1p0 , k, h, convert(k)]
             bigList.append(shortList)
         
-    # print(len(bigList))
-    # if key.verify(h, sig):
-    #     print "OK"
-    # else:
-    #     print "Incorrect signature"
 if __name__ == "__main__":
     generate()
 

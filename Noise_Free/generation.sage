@@ -153,9 +153,10 @@ def generate():
             k = random.StrongRandom().randint(int(1), int(key.q-1))
             sig = key.sign(h, k)
             # S = (r-0, s-1, k-2, h(m)-3, l_a-4, l_b-5, l_c-6, a -7, c-8, number of bits leaked-9)
-            print h
+            # print h
             shortList = [sig[0]*1.0, sig[1]*1.0, k, h, convert(k)]
             bigList.append(shortList)
+
         
 if __name__ == "__main__":
     generate()
