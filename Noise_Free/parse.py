@@ -1,14 +1,15 @@
-def sortfn(r, s, k, hm, inp_list):
+def sortfn(inp_list):
     out_list = list()
     for i in inp_list:
-        t = parser(r, s, k, hm, i)
+        t = parser(i[0], i[1], i[2], i[3], i[4])
         for p in t:
             out_list.append(p)
-    print(out_list)
+
     n = len(out_list)
     quickSort(out_list, 0, n - 1)
-
-    print(out_list)
+    out_list = out_list[::-1]
+    for i in range(len(out_list)):
+        print(i+1, out_list[i])
     return(out_list)
 
 
@@ -68,6 +69,6 @@ def quickSort(arr, low, high):
         quickSort(arr, pi+1, high)
 
 
-x = ["11001xx10101xx00000", "111111xxx0000000",
-     "1111111110xx00000011", "1001010xxxx11111"]
-sortfn('r', 's', 'k', 'h(m)', x)
+x = [('r1', 's1', 'k1', 'hm1', "11001xx10101xx00000"), ('r2', 's2', 'k2', 'hm2', "111111xxx0000000"),
+     ('r3', 's3', 'k3', 'hm3', "1111111110xx00000011"), ('r4', 's4', 'k4', 'hm4', "1001010xxxx11111")]
+sortfn(x)
