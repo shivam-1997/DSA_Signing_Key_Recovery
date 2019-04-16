@@ -4,12 +4,11 @@ def sortfn(inp_list):
         t = parser(i[0], i[1], i[2], i[3], i[4])
         for p in t:
             out_list.append(p)
-
     n = len(out_list)
     quickSort(out_list, 0, n - 1)
     out_list = out_list[::-1]
-    for i in range(len(out_list)):
-        print(i+1, out_list[i])
+    # for i in range(len(out_list)):
+    #     print( i+1, out_list[i])
     return(out_list)
 
 
@@ -33,8 +32,8 @@ def parser(r, s, k, hm, string):
         c = c - 1
         if i == 'x':
             if len(temp) >= 5:
-                a_list.append((r, s, k, hm, lsb_len, c+1, idash,
-                               lsb, temp, idash - (c + 1) + lsb_len))
+                a_list.append([r, s, k, hm, lsb_len, c+1, idash,
+                               lsb, temp, idash - (c + 1) + lsb_len])
                 total_block_len += len(temp)
             temp = ''
             idash = c
@@ -48,13 +47,12 @@ def parser(r, s, k, hm, string):
 
     return a_list
 
-
 def partition(arr, low, high):
     i = (low - 1)
-    pivot = arr[high][4]
+    pivot = arr[high][9]
 
     for j in range(low, high):
-        if arr[j][4] <= pivot:
+        if arr[j][9] <= pivot:
             i = i + 1
             arr[i], arr[j] = arr[j], arr[i]
 
@@ -69,6 +67,7 @@ def quickSort(arr, low, high):
         quickSort(arr, pi+1, high)
 
 
-x = [('r1', 's1', 'k1', 'hm1', "11001xx10101xx00000"), ('r2', 's2', 'k2', 'hm2', "111111xxx0000000"),
-     ('r3', 's3', 'k3', 'hm3', "1111111110xx00000011"), ('r4', 's4', 'k4', 'hm4', "1001010xxxx11111")]
-sortfn(x)
+# x = [('r1', 's1', 'k1', 'hm1', "11001xx10101xx00000"), ('r2', 's2', 'k2', 'hm2', "111111xxx0000000"),
+#      ('r3', 's3', 'k3', 'hm3', "1111111110xx00000011"), ('r4', 's4', 'k4', 'hm4', "1001010xxxx11111")]
+# sortfn(x)
+

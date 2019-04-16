@@ -1,6 +1,17 @@
+
 from Crypto.Random import random
 from Crypto.PublicKey import DSA
 from Crypto.Hash import SHA
+from parse import *
+# from fpylll import *
+
+
+def bytes_to_int(bytes):
+    result = 0
+    for b in bytes:
+        result = result * 256 + int(b)
+    return result
+
 
 def find_x01_sequence_util(n):
     n = n[::-1]
@@ -11,15 +22,16 @@ def find_x01_sequence_util(n):
             sm = sm + i
             if i == '1':
                 flag = 1
-        else: 
+        else:
             sm = sm + 'x'
     return (sm[::-1])
 
+
 def find_x01_sequence(string):
     n = len(string)
-    i=0
+    i = 0
     x01_sequence = ''
-    while i<n:        
+    while i < n:
         if string[i] == '0':
             count = 0
             flag_non_zero = 0
@@ -30,7 +42,7 @@ def find_x01_sequence(string):
                 if string[i+j] != '0':
                     flag_non_zero = 1
                     break
-                
+
                 count += 1
             if flag_non_zero == 1:
                 x01_sequence += 'x'
@@ -41,24 +53,25 @@ def find_x01_sequence(string):
             count = 0
             short_string = ''
             for j in range(4):
-                if i+j==n:
+                if i+j == n:
                     break
                 short_string = short_string + string[i+j]
                 count += 1
             x01_sequence = x01_sequence + find_x01_sequence_util(short_string)
             # print(short_string,find_x01_sequence_util(short_string))
-            i = i + count 
+            i = i + count
     # print(x01_sequence)
     return x01_sequence
 
 # find_x01_sequence('110010111000010100000011100110')
+
 
 def convert(k):
     num = []
     EK = []
     # here by default window_size is considered to be 4
     while k > 0:
-        rem = k%16
+        rem = k % 16
         k = k//16
         if rem == 0:
             EK.append('0000')
@@ -108,36 +121,37 @@ def convert(k):
         elif rem == 15:
             EK.append('1111')
             num.append('f')
-   
+
     num.reverse()
     # print(num)
     EK.reverse()
     # print(EK)
     ek_str = ''
     for i in EK:
-        ek_str  = ek_str + i
+        ek_str = ek_str + i
     x01_seq = find_x01_sequence(ek_str)
     return x01_seq
+
 
 def generate():
     #create a  new DSA key
     key = DSA.generate(int(1024))
 
     # subgroup order is q
-    f = open("q.pem", "w")
-    print(key.q)
+    f = open("./files/q.pem", "w")
+    # print(key.q)
     f.write(str(key.q))
     f.close()
 
     # public_key is y
-    f = open("public_key.pem", "w")
-    print(key.y)
+    f = open("./files/public_key.pem", "w")
+    # print(key.y)
     f.write(str(key.y))
     f.close()
 
     # private key x
-    f = open("private_key.pem", "w")
-    print(hex(key.x))
+    f = open("./files/private_key.pem", "w")
+    # print(hex(key.x))
     hex_key = hex(key.x)
     hex_key = hex_key.rstrip('L')
     hex_key = hex_key.lstrip('0x')
@@ -148,15 +162,22 @@ def generate():
     message = b"Hello"
     bigList = []
     h = SHA.new(message).digest()
-    with open("r_s_k_h.csv", "w") as f:
-        for i in range(150):
-            k = random.StrongRandom().randint(int(1), int(key.q-1))
-            sig = key.sign(h, k)
-            # S = (r-0, s-1, k-2, h(m)-3, l_a-4, l_b-5, l_c-6, a -7, c-8, number of bits leaked-9)
-            # print h
-            shortList = [sig[0]*1.0, sig[1]*1.0, k, h, convert(k)]
-            bigList.append(shortList)
+    h = bytes_to_int(h)
+    for i in range(150):
+        k = random.StrongRandom().randint(int(1), int(key.q-1))
+        sig = key.sign(h, k)
+        # S = (r-0, s-1, k-2, h(m)-3, l_a-4, l_b-5, l_c-6, a -7, c-8, number of bits leaked-9)
+        # print h
+        shortList = [sig[0], sig[1], k, h, convert(k)]
+        bigList.append(shortList)
 
-        
+    print('list generated')
+    EKOs_list = sortfn(bigList)
+    print('EKOs generated and sorted')
+    with open("./files/list.csv", "w") as f:
+        for i in EKOs_list:
+            print(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7], i[8], i[9], file=f, sep=',')
+
+    print('Files written to disk')
 if __name__ == "__main__":
     generate()
