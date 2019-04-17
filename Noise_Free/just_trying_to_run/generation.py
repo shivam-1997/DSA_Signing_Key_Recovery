@@ -1,10 +1,8 @@
-
 from Crypto.Random import random
 from Crypto.PublicKey import DSA
 from Crypto.Hash import SHA
 from parse import *
 # from fpylll import *
-
 
 def bytes_to_int(bytes):
     result = 0
@@ -65,74 +63,6 @@ def find_x01_sequence(string):
 
 # find_x01_sequence('110010111000010100000011100110')
 
-
-def convert(k):
-    num = []
-    EK = []
-    # here by default window_size is considered to be 4
-    while k > 0:
-        rem = k % 16
-        k = k//16
-        if rem == 0:
-            EK.append('0000')
-            num.append(0)
-        elif rem == 1:
-            EK.append('0001')
-            num.append(1)
-        elif rem == 2:
-            EK.append('0010')
-            num.append(2)
-        elif rem == 3:
-            EK.append('0011')
-            num.append(3)
-        elif rem == 4:
-            EK.append('0100')
-            num.append(4)
-        elif rem == 5:
-            EK.append('0101')
-            num.append(5)
-        elif rem == 6:
-            EK.append('0110')
-            num.append(6)
-        elif rem == 7:
-            EK.append('0111')
-            num.append(7)
-        elif rem == 8:
-            EK.append('1000')
-            num.append(8)
-        elif rem == 9:
-            EK.append('1001')
-            num.append(9)
-        elif rem == 10:
-            EK.append('1010')
-            num.append('a')
-        elif rem == 11:
-            EK.append('1011')
-            num.append('b')
-        elif rem == 12:
-            EK.append('1100')
-            num.append('c')
-        elif rem == 13:
-            EK.append('1101')
-            num.append('d')
-        elif rem == 14:
-            EK.append('1110')
-            num.append('e')
-        elif rem == 15:
-            EK.append('1111')
-            num.append('f')
-
-    num.reverse()
-    # print(num)
-    EK.reverse()
-    # print(EK)
-    ek_str = ''
-    for i in EK:
-        ek_str = ek_str + i
-    x01_seq = find_x01_sequence(ek_str)
-    return x01_seq
-
-
 def generate():
     #create a  new DSA key
     key = DSA.generate(int(1024 ))
@@ -168,7 +98,7 @@ def generate():
         sig = key.sign(h, k)
         # S = (r-0, s-1, k-2, h(m)-3, l_a-4, l_b-5, l_c-6, a -7, c-8, number of bits leaked-9)
         # print h
-        shortList = [sig[0], sig[1], k, h, convert(k)]
+        shortList = [sig[0], sig[1], k, h]
         bigList.append(shortList)
 
     print('list generated')
@@ -179,5 +109,7 @@ def generate():
             print(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7], i[8], i[9], file=f, sep=',')
 
     print('Files written to disk')
+
+
 if __name__ == "__main__":
     generate()
