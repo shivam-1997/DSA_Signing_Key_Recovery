@@ -1,3 +1,26 @@
+def parsefn(inp_list):
+    newlist = list()
+    a = ''
+    for i in inp_list:
+        print(i, '-i')
+        for j in i[2][-1:-10:-1]:
+            a = a + j
+
+        for j in i[2][-10:-20:-1]:
+            a = a + 'x'
+
+        for j in i[2][-20:-40:-1]:
+            a = a + j
+
+        for j in i[2][-40::-1]:
+            a = a + 'x'
+
+        a = a[::-1]
+        print(a, "- a")
+        newlist.append(tuple((*i, a)))
+
+    return sortfn(newlist)
+
 def sortfn(inp_list):
     out_list = list()
     for i in inp_list:
